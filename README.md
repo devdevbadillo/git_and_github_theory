@@ -27,12 +27,12 @@
     - [git branch: Crear, listar y borrar ramas](#comando-git-branch)
     - [git checkout: Cambiar entre ramas](#comando-git-checkout)
     - [git merge: Combinar cambios de una rama a otra](#comando-git-merge)
+    - [Resolución de conflictos de fusión (Merge Conflicts)](#merge-conflicts)
     - [git rebase: Reorganizar el historial de confirmaciones](#comando-git-rebase)
   - [Estrategias de ramificación](#estrategias-de-ramificacion)
     - [Git Flow](#git-flow)
     - [GitHub Flow](#github-flow)
     - [Trunk-based development](#trunk-based-development)
-  - [Resolución de conflictos de fusión (Merge Conflicts)](#merge-conflicts)
 - [Conceptos Avanzados de Git](#conceptos-avanzados-de-git)
   - [Revertir cambios](#revertir-cambios)
     - [git revert: Crear una nueva confirmación](#comando-git-revert)
@@ -494,9 +494,23 @@ Thumbs.db # Windows
 
 <a id="que-son-las-ramas-y-su-uso"></a>
 ### ¿Qué son las ramas y por qué utilizarlas?
+Podemos imaginar a las ramas como caminos que se bifurcan desde un punto común. La rama principal (generalmente llamada main o master) representa la línea principal de desarrollo, mientras que las ramas adicionales permiten explorar diferentes direcciones sin afectar el código principal.
+![image](https://github.com/user-attachments/assets/4eabb0d7-b9b0-4a6b-9b53-588878fbcef0)
+
+
+1. `Desarrollo paralelo`: Permiten que múltiples desarrolladores trabajen en diferentes características o correcciones de errores al mismo tiempo sin interferir entre sí.
+
+2. `Aislamiento de cambios`: Cualquier cambio que se haga en una rama no afecta a otras ramas hasta que se decida fusionarla. Esto es crucial para probar nuevas funcionalidades sin romper la versión estable del código.
+
+3. `Experimentación segura`: Se puede experimentar con nuevas ideas o enfoques radicales en una rama sin miedo a estropear el proyecto principal. Si la idea no funciona, simplemente eliminas la rama.
+
+4. `Flujos de trabajo organizados`: Las ramas son la base de flujos de trabajo como Git Flow o GitHub Flow, que ayudan a organizar el proceso de desarrollo y despliegue de software.
+
+5. `Revisión de código`: Las ramas son intrínsecas a los Pull Requests (en GitHub) o Merge Requests (en GitLab), donde el código es revisado por otros antes de ser integrado en la rama principal.
 
 <a id="comandos-de-ramas"></a>
 ### Comandos de ramas
+Ahora que entendemos la importancia, veamos los comandos clave para manipular ramas.
 
 <a id="comando-git-branch"></a>
 #### git branch: Crear, listar y borrar ramas
@@ -544,12 +558,185 @@ git branch -D nombre-de-la-rama-a-borrar
 
 <a id="comando-git-checkout"></a>
 #### git checkout: Cambiar entre ramas
+El comando `git checkout` sirve para cambiar entre ramas y restaurar archivos del historial. Aunque su uso para cambiar de rama es muy común, es importante saber que en versiones recientes de Git (2.23+), el comando  `git switch` **se introdujo específicamente para esta tarea, haciendo el checkout más enfocado en restaurar archivos**.
+
+- ¿Cómo funciona? 
+
+1. Actualiza el área de trabajo `(working directory)` para que refleje la instantánea del commit al que apunta esa rama.
+
+2. Actualiza tu área de preparación `(staging area)`.
+
+3. Mueve el puntero `HEAD` (que indica tu rama actual) a la rama que has seleccionado.
+
+> Uso
+
+1. Cambiar a una rama existente:
+```
+  git checkout <nombre-de-la-rama-existente>
+```
+
+2. Crear una nueva rama y cambiar a ella inmediatamente:
+```
+  git checkout -b <nombre-de-la-nueva-rama>
+```
+
+- La opción -b (o --branch) es un atajo para `git branch <nombre-de-la-nueva-rama>` 
+
+> [!IMPORTANT]
+>
+>  - En nuevas versiones de Git, `git switch` es la opción preferida para cambiar de rama:
+> 
+> ```git switch <nombre-de-la-rama-existente>```
+> 
+>  ```git switch -c <nombre-de-la-nueva-rama> # Crear y cambiar```
 
 <a id="comando-git-merge"></a>
 #### git merge: Combinar cambios de una rama a otra
+El comando `git merge` te permite integrar los cambios de una rama en otra. Es la forma más común de combinar líneas de desarrollo.
+
+Cuando se intenta fusionar una rama (por ejemplo, `feature-x`) en otra (por ejemplo, `main`), Git intenta integrar los cambios de `feature-x` en `main`. Hay dos escenarios principales:
+
+1. `Fast-Forward Merge (Avance Rápido)`: Si la rama `main` **no ha tenido cambios desde que se creó la rama que con la que se quiere fusionar (feature-x)**, Git simplemente **mueve el puntero de `main` hacia adelante al último commit de `feature-x`**. 
+
+2. `Three-Way Merge (Fusión de Tres Vías)`: Si ambas ramas (`main` y `feature-x`) han evolucionado de forma independiente **desde su punto de ancestro común**, Git **realiza una fusión de tres vías**. Esto significa que Git necesita comparar el ancestro común con los estados de ambas ramas para crear **un nuevo commit de fusión que contenga los cambios de ambas ramas**.
+
+> Uso
+
+1. Primero, se debe de asegurar de estar en la rama que va a recibir los cambios:
+```
+git switch main # O git checkout main
+```
+
+2. Fusionamos la rama
+```
+git merge feature-x
+```
+
+<a id="merge-conflicts"></a>
+### Resolución de conflictos de fusión (Merge Conflicts)
+Un conflicto de fusión ocurre cuando Git no puede fusionar automáticamente los cambios de dos ramas diferentes en el mismo lugar de un archivo. Esto sucede típicamente en los siguientes escenarios:
+
+1. `Modificaciones idénticas en la misma línea`: Dos ramas editan la misma línea de código de forma diferente.
+
+2. `Un archivo modificado y otro eliminado`: Una rama modifica un archivo mientras la otra lo elimina.
+
+3. `Un archivo modificado y otro renombrado`: Una rama modifica un archivo mientras la otra lo renombra.
+
+Cuando Git encuentra un conflicto, **no puede proceder con la fusión** y te lo notifica, dejando el repositorio en un estado de "fusión en curso" (`MERGING`). En este punto, **Git espera que se intervenga y se resuelva el desacuerdo manualmente**.
+
+> El Proceso de resolución de conflictos
+
+1. Cuando ocurre un conflicto, se mostrará un mensaje cómo:
+
+```
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   src/app.js
+```       
+
+- Esto significa que `src/app.js` tiene un conflicto.
+
+2. Identificar los archivos en conflicto: `git status` también sirve para indicarte qué archivos tienen conflictos.
+
+
+3. Abrir los archivos en conflicto: Abre cada archivo en conflicto en un editor de código preferentemente. Dentro de estos archivos, **Git habrá insertado unos marcadores de conflicto especiales** para mostrar dónde están las diferencias y de dónde provienen:
+```
+<<<<<<< HEAD
+Esta es la versión de la línea en la rama actual (HEAD, es decir, 'main' o la rama en la que se estaba iniciando la fusión).
+=======
+Esta es la versión de la línea en la rama que se está intentando fusionar (por ejemplo, 'feature/new-feature').
+>>>>>>> feature/new-feature
+```
+
+- `<<<<<<< HEAD`: Marca el inicio del conflicto y el contenido de la rama actual.
+
+- `=======`: Separa las dos versiones en conflicto.
+
+- `>>>>>>> nombre-de-la-rama`: Marca el final del conflicto y el contenido de la rama se está queriendo fusionar.
+
+
+4. Editar manualmente el archivo: Uno tiene que decidir qué versión de las líneas en conflicto se quiere mantener. Tienes tres opciones:
+
+- Mantener los cambios actuales (HEAD): Elimina el contenido de la otra rama.
+
+- Mantener los cambios de la otra rama: Elimina el contenido de la rama actual.
+
+- Combinar ambos: Se permite integrar ambos conjuntos de cambios de la manera que tenga sentido lógico.
+
+> Ejemplo
+
+- Si el conflicto es:
+```
+function greet() {
+<<<<<<< HEAD
+    console.log("Hello, world!");
+=======
+    console.log("Hi there!");
+>>>>>>> feature/spanish-greeting
+}
+```
+
+- Uno puede quedarse con los cambios actuales y eliminar los cambios de la otra rama:
+```
+function greet() {
+    console.log("Hello, world!");
+}
+```
+
+5. Una vez que se haya editado el archivo y eliminado todos los marcadores de conflicto, se debe de indicar que el conflicto en ese archivo ha sido resuelto. Esto se hace usando `git add`:
+```
+git add src/app.js
+```
+
+> [!IMPORTANT]
+> 
+> Si se tienen varios archivos en conflicto, se debe de repetir este proceso para cada uno de ellos y luego `git add` en cada archivo resuelto.
+
+6. Completar la fusión: Una vez que todos los archivos en conflicto han sido resueltos y marcados con `git add`, se finaliza la fusión con un `git commit`
+
+> [!IMPORTANT]
+> 
+> Si se inicia una fusión, y existen conflictos y no se quiere continuar con la fusión, entonces, se tiene que utilizar el comando:
+>
+> - `git merge --abort`
 
 <a id="comando-git-rebase"></a>
 #### git rebase: Reorganizar el historial de confirmaciones
+El comando `git rebase` permite **reorganizar o reescribir el historial de confirmaciones**
+
+> [!NOTE]
+> A diferencia de `git merge`, que crea un nuevo commit de fusión, `git rebase` **toma los commits de LA rama y los "reproduce" sobre otra base**, haciendo que parezca que la rama se creó directamente desde el punto final de esa nueva base.
+
+1. Antes de Rebase:
+```   
+A -- B -- C (main)
+      \
+       D -- E (feature)
+```
+
+2. Después de `git rebase` main en feature:
+```
+A -- B -- C (main)
+           \
+            D' -- E' (feature)
+```
+
+- **Donde D' y E' son los mismos cambios que D y E**, pero con nuevos hashes de commit porque su "padre" (`HEAD`) ha cambiado.
+
+1. Primero, se debe de asegurar de estar en la rama que se quiere rebasar (la rama de trabajo):
+```
+git switch feature/nueva-funcionalidad
+```
+
+2. Luego, se ejecuta el rebase sobre la rama objetivo (por ejemplo, `main`)
+```
+git rebase main
+```
 
 <a id="estrategias-de-ramificacion"></a>
 ### Estrategias de ramificación
@@ -688,17 +875,7 @@ Trunk-Based Development (TBD) es una estrategia de control de versiones donde **
 
 - ¿Cuándo usarlo? Equipos de desarrollo ágiles y maduros, proyectos con alta frecuencia de despliegue, microservicios, o cualquier equipo que busque maximizar la velocidad y la integración continua.
 
-<a id="merge-conflicts"></a>
-### Resolución de conflictos de fusión (Merge Conflicts)
-Un conflicto de fusión ocurre cuando Git no puede fusionar automáticamente los cambios de dos ramas diferentes en el mismo lugar de un archivo. Esto sucede típicamente en los siguientes escenarios:
 
-1. `Modificaciones idénticas en la misma línea`: Dos ramas editan la misma línea de código de forma diferente.
-
-2. `Un archivo modificado y otro eliminado`: Una rama modifica un archivo mientras la otra lo elimina.
-
-3. `Un archivo modificado y otro renombrado`: Una rama modifica un archivo mientras la otra lo renombra.
-
-Cuando Git encuentra un conflicto, no puede proceder con la fusión y te lo notifica, dejando el repositorio en un estado de "fusión en curso" (MERGING). En este punto, **Git espera que intervengas y resuelvas el desacuerdo manualmente**  .
 
 <a id="conceptos-avanzados-de-git"></a>
 ## Conceptos Avanzados de Git
