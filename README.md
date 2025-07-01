@@ -495,7 +495,10 @@ Thumbs.db # Windows
 <a id="que-son-las-ramas-y-su-uso"></a>
 ### ¿Qué son las ramas y por qué utilizarlas?
 Podemos imaginar a las ramas como caminos que se bifurcan desde un punto común. La rama principal (generalmente llamada main o master) representa la línea principal de desarrollo, mientras que las ramas adicionales permiten explorar diferentes direcciones sin afectar el código principal.
-![image](https://github.com/user-attachments/assets/4eabb0d7-b9b0-4a6b-9b53-588878fbcef0)
+
+![image](https://github.com/user-attachments/assets/491795be-95c6-41ff-b395-4a7146843070)
+
+
 
 
 1. `Desarrollo paralelo`: Permiten que múltiples desarrolladores trabajen en diferentes características o correcciones de errores al mismo tiempo sin interferir entre sí.
