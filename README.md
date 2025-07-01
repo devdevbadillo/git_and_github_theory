@@ -500,6 +500,47 @@ Thumbs.db # Windows
 
 <a id="comando-git-branch"></a>
 #### git branch: Crear, listar y borrar ramas
+El comando `git branch` es la herramienta principal para gestionar las ramas en tu repositorio local.
+
+> Uso
+
+1. Listar todas las ramas locales
+- Input:
+```
+  git branch
+```
+
+- Output:
+```
+* main
+  feature/nueva-funcionalidad
+  bugfix/error-login  
+```
+
+Donde el asterisco (*) indica la rama actual.
+
+2. Crear una nueva rama
+```
+git branch <nombre-de-la-nueva-rama>
+```
+
+- **Esto crea la rama, pero no te mueve a ella**
+
+3. Borrar una rama local (después de fusionarla)
+```
+git branch -d nombre-de-la-rama-a-borrar
+```
+
+> [!IMPORTANT]
+> 
+> - La opción `-d (o --delete)` es una "eliminación segura". Solo permite borrar la rama **si ya ha sido fusionada en la rama actual** (o en la rama que especificaste como upstream). Esto previene la pérdida de trabajo no fusionado.
+
+4. Borrar una rama local (forzado)
+```
+git branch -D nombre-de-la-rama-a-borrar
+```
+
+- La opción `-D (o --delete --force)` forzará la eliminación de la rama, **incluso si contiene cambios que aún no han sido fusionados** en otra rama. 
 
 <a id="comando-git-checkout"></a>
 #### git checkout: Cambiar entre ramas
