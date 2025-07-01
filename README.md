@@ -35,7 +35,7 @@
     - [Trunk-based development](#trunk-based-development)
 - [Conceptos Avanzados de Git](#conceptos-avanzados-de-git)
   - [Revertir cambios](#revertir-cambios)
-    - [git revert: Crear una nueva confirmación](#comando-git-revert)
+    - [git revert: Crear una nueva confirmación y deshacer una confirmación anterior](#comando-git-revert)
     - [git reset: Mover el puntero del HEAD a una confirmación anterior](#comando-git-reset)
   - [Stashing](#stashing)
     - [git stash: Guardar temporalmente cambios no confirmados](#comando-git-stash)
@@ -879,63 +879,226 @@ Trunk-Based Development (TBD) es una estrategia de control de versiones donde **
 - ¿Cuándo usarlo? Equipos de desarrollo ágiles y maduros, proyectos con alta frecuencia de despliegue, microservicios, o cualquier equipo que busque maximizar la velocidad y la integración continua.
 
 
-
 <a id="conceptos-avanzados-de-git"></a>
 ## Conceptos Avanzados de Git
 
 <a id="revertir-cambios"></a>
 ### Revertir cambios
+Cuando se trabaja con Git, es común deshacer cambios. Git ofrece principalmente dos comandos para esto: `git revert` y `git reset`. Aunque ambos logran un objetivo similar, lo hacen de maneras fundamentalmente diferentes, lo que los hace adecuados para distintos escenarios.
 
 <a id="comando-git-revert"></a>
-#### git revert: Crear una nueva confirmación
+#### git revert: Crear una nueva confirmación y deshacer una confirmación anterior
+El comando `git revert <commit-hash>` se utiliza para **deshacer los cambios introducidos por una confirmación específica**.
+
+> [!IMPORTANT]
+>
+>  - La clave aquí es que `git revert` **no elimina la confirmación original del historial**; en su lugar, crea una nueva confirmación que **anula los cambios de la confirmación que se está revirtiendo**.
+
+- ¿Cuándo usarlo?
+
+1. Cuando se necesita deshacer una confirmación que **ya ha sido empujada a un repositorio remoto** y es pública.
+
+2. Si quieres revertir cambios en una rama compartida sin afectar el historial de otros colaboradores.
+
+3. Para deshacer accidentalmente una confirmación en `main` o una rama principal.
 
 <a id="comando-git-reset"></a>
 #### git reset: Mover el puntero del HEAD a una confirmación anterior
+El comando `git reset <modo> <commit-hash>` es mucho más potente y **puede ser destructivo**, ya que **reescribe el historial del repositorio**. Mueve el puntero `HEAD` a una confirmación anterior, eliminando efectivamente las confirmaciones posteriores de la rama actual.
+
+> Modos de git reset:
+
+* `--soft`: Mueve `HEAD` al commit-hash especificado. **Los cambios** de las confirmaciones que se están "deshaciendo" **permanecen en el área de staging**. Es útil si se quiere combinar varias confirmaciones recientes en una sola.
+
+* `--mixed (por defecto)`: Mueve `HEAD` al commit-hash especificado y también **restablece el área de staging para que coincida con esa confirmación**. **Los cambios de las confirmaciones "deshechas" se mueven al directorio de trabajo (archivos no preparados)**. Es útil para deshacer una confirmación y seguir trabajando en esos cambios.
+
+> [!IMPORTANT]
+>
+> * `--hard`: Es el más drástico. Mueve HEAD al commit-hash especificado, **restablece el área de staging y modifica tu directorio de trabajo para que coincida exactamente con la confirmación de destino**
+>   
+> Todos los cambios no confirmados y no registrados después del commit-hash **se perderán permanentemente**
+
+- ¿Cuándo usarlo?
+
+1. Es ideal para **limpiar un historial de confirmaciones** antes de empujar los cambios a un repositorio remoto
+   
+2. Para deshacer confirmaciones erróneas que aún no han sido compartidas
+
+3. Para reorganizar confirmaciones locales 
 
 <a id="stashing"></a>
 ### Stashing
+A menudo, uno está trabajando en una función y de repente surge algo más urgente que necesita tu atención. Pero no se quiere confirmar el trabajo a medias que estabas realizando antres porque no está listo. Aquí es donde entra `git stash`.
 
 <a id="comando-git-stash"></a>
 #### git stash: Guardar temporalmente cambios no confirmados
 
+`git stash` es un comando útil que te permite guardar **temporalmente** los cambios no confirmados (tanto los **archivos modificados como los archivos en el área de staging***) y luego volver a un estado de directorio de trabajo limpio. Es como poner tu trabajo en pausa, sin tener que crear una confirmación incompleta.
+
+- ¿Cómo funciona?
+
+Cuando se ejecuta `git stash`, Git toma los cambios modificados y no confirmados, los guarda en una "pila" interna de stashes, y luego limpia tu directorio de trabajo y el área de staging, **volviéndolos al estado de la última confirmación.**
+
+> Comandos útiles de git stash:
+
+1. `git stash save "Mensaje opcional" o simplemente git stash`: Guarda los cambios actuales. Se puede añadir un mensaje para describir el stash.
+
+2. `git stash list`: Muestra una lista de todos los stashes que se han guardado. **Cada stash se identifica con un índice** (por ejemplo, stash@{0}, stash@{1}).
+
+3. `git stash apply <stash-id>`: Aplica los cambios de un stash específico al directorio de trabajo actual. **Los cambios se aplican, pero el stash permanece en la lista**. Si no especificas un <stash-id>, aplica el stash más reciente (stash@{0}).
+
+4. `git stash pop <stash-id>`: Similar a apply, pero elimina el stash de la lista después de aplicarlo. Generalmente es la opción preferida si estás seguro de que ya no se necesitará ese stash.
+
+5. `git stash drop <stash-id>`: Elimina un stash específico de la lista **sin aplicarlo**.
+
+6. `git stash clear`: Elimina **todos** los stashes de la lista.
+
 <a id="cherry-picking"></a>
 ### Cherry-picking
+A veces, no se quiere fusionar toda una rama, pero hay una o dos confirmaciones específicas de esa rama que sí se quiere traer a la rama actual. Aquí es donde `git cherry-pick` brilla.
 
 <a id="comando-git-cherry-pick"></a>
 #### git cherry-pick: Aplicar una confirmación específica de una rama a otra
+El comando `git cherry-pick <commit-hash>` te **permite aplicar los cambios introducidos por una confirmación existente de cualquier rama a la rama actual**. Git toma el parche de la confirmación especificada y lo aplica como una nueva confirmación en la rama actual.
+
+> Características y consideraciones:
+
+- Es útil para replicar correcciones de errores o nuevas características **específicas** en diferentes ramas sin tener que fusionar ramas enteras.
+
+- Usar cherry-pick de forma extensiva puede llevar a un historial de confirmaciones más complejo y con cambios duplicados, lo que a veces puede dificultar el seguimiento.
+
+- Al igual que con merge o rebase, **pueden surgir conflictos** si los cambios que intentas aplicar entran en conflicto con el código de la rama actual. 
+
+¿Cuándo usarlo?
+
+1. Si se ha corregido un error crítico en una rama de desarrollo y se necesita aplicar rápidamente esa corrección a una rama de producción sin fusionar todas las demás características en desarrollo.
+
+2. Cuando solo unas pocas confirmaciones de una rama son relevantes para otra, y una fusión completa sería demasiado grande o incluiría cambios no deseados.
 
 <a id="reflog"></a>
 ### Reflog
+En ocasiones por carga de trbajo tiende uno preguntarse: "¿Qué demonios hice en Git hace cinco minutos?". O, "Acabo de hacer un reset --hard y ahora no sé dónde estaba mi HEAD." Si tienes estás situaciones, `git reflog` es de suma importancia.
 
 <a id="comando-git-reflog"></a>
 #### git reflog: El historial del repositorio
+El comando `git reflog` (abreviatura de "reference logs") es una herramienta que registra cada vez que la punta de una rama o `HEAD` se actualiza en el repositorio local. Esto significa que registra casi cualquier acción que modifique el historial del repositorio, como confirmaciones, fusiones, rebase, resets, cherry-picks y stashes.
+
+> Ejemplo de uso:
+
+1. Imaginemos que accidentalmente se hizo un `git reset --hard HEAD~2` y se perdieron algunas confirmaciones.
+
+2. Se ejecuta el comando `git reflog`.
+
+3. Se verán una lista de entradas, como:
+  ```
+    a1b2c3d HEAD@{0}: reset: moving to HEAD~2
+    e4f5g6h HEAD@{1}: commit: Add new feature X
+    i7j8k9l HEAD@{2}: commit: Fix bug Y
+    ...
+  ```
+
+4. Se identifica la confirmación `e4f5g6h` o `i7j8k9l` como el estado al que se quiere volver antes del reset.
+
+5. Se ejecuta `git reset --hard e4f5g6h` (o el hash de la confirmación deseada del reflog) para restaurar la rama a ese punto.
+
+> [!IMPORTANT]
+> 
+> - El reflog es local para tu repositorio. No se comparte cuando empujas cambios a un repositorio remoto. Esto significa que si eliminas o clonas de nuevo un repositorio, perderás su reflog.
 
 <a id="colaboracion-con-github"></a>
 ## Colaboración con Git y GitHub
+GitHub no es Git; **es un servicio de alojamiento de repositorios Git** basado en la web que añade una capa de funcionalidades sociales y de gestión de proyectos sobre Git.
 
 <a id="repositorios-remotos"></a>
 ### Repositorios remotos
+Un repositorio remoto **es una versión de un proyecto** que reside en un servidor en internet o en una red, en lugar de estar en una máquina local. Actúa como el centro neurálgico para que múltiples colaboradores trabajen en el mismo proyecto.
 
 <a id="repositorios-en-github"></a>
 #### Repositorios en GitHub
+GitHub es el servicio de alojamiento de repositorios remotos más popular. Cuando se crea un repositorio en GitHub, se está creando una copia de algún proyecto que está accesible para otros (**si es público**) o para tu equipo (si es privado). Este repositorio remoto sirve como la "fuente de la verdad" del proyecto.
+
+> Algunos beneficios
+
+1. Permite que varios desarrolladores trabajen en el mismo proyecto, fusionando sus cambios sin problemas.
+
+2. El código está almacenado de forma segura fuera de una máquina local, protegiéndolo de pérdidas.
+
+3. Permite gestionar quién tiene permiso para leer o escribir en un repositorio.
+
+4. GitHub ofrece funcionalidades como Issues (para seguimiento de errores y tareas), Pull Requests (para revisión de código), Wikis y Pages.
 
 <a id="configuracion-de-conexion"></a>
 #### Configuración de conexión
+Para que el repositorio Git local se comunique con un repositorio remoto en GitHub, se necesita que configurar una conexión. Esto generalmente implica el uso de protocolos SSH o HTTPS.
+
+1. HTTPS
+Solo se necesita eñ nombre de usuario y contraseña (o un token de acceso personal si se tiene la autenticación de dos factores activada) para autenticarte. Es conveniente porque funciona a través de la mayoría de los cortafuegos y proxies.
+
+2. SSH:
+Ofrece una mayor seguridad y comodidad una vez configurado. En lugar de usar tu nombre de usuario y contraseña en cada operación, se utilizan un par de claves SSH (una pública y una privada). La clave pública se añade a tu cuenta de GitHub, y la clave privada permanece segura en la máquina local.
+
+Esto permite una autenticación sin contraseña para las operaciones de Git. Aunque su configuración inicial es un poco más compleja, es preferido para desarrolladores que realizan muchas interacciones con repositorios remotos.
 
 <a id="comandos-para-repositorios-remotos"></a>
 ### Comandos para repositorios remotos
+Estos comandos son esenciales para interactuar con repositorios en GitHub.
 
 <a id="comando-git-remote"></a>
 #### git remote: Gestionar repositorios remotos
+`git remote` permite gestionar las conexiones del repositorio local con los repositorios remotos.
+
+> Comandos
+
+1. `git remote`: Lista los nombres de los repositorios remotos configurados
+
+2. `git remote -v`: Muestra los nombres de los remotos junto con sus URLs
+
+3. `git remote add <nombre_remoto> <URL`>: Añade un nuevo repositorio remoto a la configuración local. `Por ejemplo, git remote add upstream https://github.com/proyecto/repo.git`
+
+4. `git remote rm <nombre_remoto>`: Elimina una **conexión** a un repositorio remoto.
+
+5. `git remote rename <nombre_antiguo> <nombre_nuevo>`: Cambia el nombre de un repositorio remoto existente
 
 <a id="comando-git-clone"></a>
 #### git clone: Clonar un repositorio existente de GitHub
 
+El comando `git clone <URL_del_repositorio>` es el punto de partida para la mayoría de los proyectos en los que deseas colaborar. Cuando clonas un repositorio:
+
+1. Descarga una copia completa del repositorio remoto (incluyendo todo su historial de confirmaciones, ramas, etc.) a la máquina local.
+
+2. Crea una nueva carpeta con el nombre del repositorio (a menos que se especifique otro).
+
+3. Configura automáticamente el remoto origin **apuntando a la URL desde donde ha sido clonado**.
+
+4. Configura la rama local main (o master) para rastrear la rama remota correspondiente.
+
+```
+Ejemplo: git clone https://github.com/usuario/mi-proyecto.git
+```
+
 <a id="comando-git-push"></a>
 #### git push: Subir cambios locales a un repositorio remoto
 
+El comando `git push <nombre_remoto> <nombre_rama>` se utiliza para enviar las confirmaciones locales a un repositorio remoto. Es cómo se comparte el trabajo local con el resto del equipo para la actualización del repositorio central.
+
+> [!IMPORTANT]
+> 
+> - Si el repositorio remoto tiene cambios que no se tienen en el local, Git pedirá que se haga un `pull` antes de hacer el `push` (para evitar sobrescribir el trabajo de otros).
+
+
 <a id="comando-git-pull"></a>
 #### git pull: Descargar cambios de un repositorio remoto y fusionarlos
+El comando `git pull <nombre_remoto> <nombre_rama>` es una operación de dos pasos que:
+
+1. `git fetch`: Descarga los cambios (confirmaciones, ramas, etc.) del repositorio remoto al repositorio local. Estos cambios se almacenan en las "ramas de seguimiento remoto" (ej., origin/main).
+
+2. `git merge`: Fusiona esos cambios descargados de la rama de seguimiento remoto en la rama local actual.
+
+> [!IMPORTANT]
+> 
+> 1. Si se tiene cambios locales no confirmados, Git te pedirá que los guardes (stash) o los confirmes antes de hacer pull.
+> 
+> 2. Pueden ocurrir conflictos de fusión si los cambios remotos chocan con tus cambios locales. Deberás resolverlos manualmente.
 
 <a id="comando-git-fetch"></a>
 #### git fetch: Descargar cambios de un remoto sin fusionarlos
