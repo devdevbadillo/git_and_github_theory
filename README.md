@@ -66,7 +66,6 @@
     - [Projects](#projects)
     - [Discussions](#discussions)
   - [Flujos de trabajo colaborativos](#flujos-de-trabajo-colaborativo)
-    - [Centralized Workflow](#centralized-workflow)
     - [Fork: Contribuir a proyectos de código abierto](#forks)
 
 
@@ -1102,21 +1101,70 @@ El comando `git pull <nombre_remoto> <nombre_rama>` es una operación de dos pas
 
 <a id="comando-git-fetch"></a>
 #### git fetch: Descargar cambios de un remoto sin fusionarlos
+A diferencia de `git pull`, el comando `git fetch <nombre_remoto> <nombre_rama>` **solo descarga los cambios del repositorio remoto al repositorio local, pero no los fusiona automáticamente** en la rama de trabajo.
+
+- Estos cambios se almacenan en las ramas de seguimiento remoto (por ejemplo, origin/main).
+
+> ¿Por qué usar git fetch en lugar de git pull?
+> 
+> - Si no se está seguro de si los cambios remotos causarán conflictos, **fetch** te da la oportunidad de revisarlos y preparar la rama local antes de una fusión.
+> - Una vez que has hecho fetch, se puede decidir cómo integrar esos cambios: `merge`, `rebase`, o incluso `cherry-pick` si solo se quieren algunas confirmaciones.
 
 <a id="github-como-plataforma"></a>
 ## GitHub como plataforma
+GitHub se ha consolidado como una plataforma integral para el desarrollo de software colaborativo. Ofrece un conjunto robusto de herramientas que facilitan la gestión de proyectos, la comunicación en equipo y la automatización del flujo de trabajo.
 
 <a id="issues"></a>
 ### Issues
+Los Issues son una funcionalidad central de GitHub que actúa como **un sistema de seguimiento y gestión de tareas dentro de un repositorio**. 
 
 <a id="seguimiento-de-tareas-errores"></a>
 #### Seguimiento de tareas, errores y mejoras
+En esencia, los Issues **son la forma en que los equipos organizan y priorizan el trabajo**. Cada Issue es una entrada que puede representar:
+
+1. `Errores (Bugs`): Cuando algo no funciona como se espera, se crea un Issue para describir el problema, reproducirlo y asignar a alguien para que lo corrija.
+
+2. `Tareas (Tasks)`: Para desglosar proyectos grandes en piezas más pequeñas y manejables, cada una con su propio Issue. Por ejemplo, "Implementar la página de inicio de sesión".
+
+3. `Mejoras (Enhancements/Features)`: Para proponer y discutir nuevas funcionalidades o mejoras al código existente. Por ejemplo, "Añadir un modo oscuro a la interfaz de usuario".
+
+4. `Preguntas o discusiones`: A veces, un Issue puede ser simplemente un lugar para hacer una pregunta o iniciar una discusión sobre una parte del código o una decisión de diseño.
+
+> Características clave de los Issues
+
+1. `Título y descripción`: Un título conciso y una descripción detallada que explica el propósito del Issue.
+
+2. `Asignados (Assignees)`: Personas responsables de trabajar en el Issue.
+
+3. `Etiquetas (Labels)`: Para categorizar los Issues (por ejemplo, bug, feature, documentation, help wanted, priority: high)
+
+4. `Milstones (Milestones)`: Para agrupar Issues relacionados en objetivos a un mayor plazo o en lanzamientos específicos del producto.
+
+5. `Comentarios`: Un hilo de discusión donde los colaboradores pueden dejar comentarios, hacer preguntas, compartir capturas de pantalla o actualizaciones de progreso.
+
+![image](https://github.com/user-attachments/assets/120c68de-74e6-43c7-9cd2-9b9f0c121805)
+
 
 <a id="pull-request"></a>
 ### Pull Requests (PRs)
+Son la forma estándar de proponer cambios a un repositorio y solicitar que esos cambios sean revisados y fusionados en una rama principal.
 
 <a id="proceso-de-revision-de-codigo"></a>
 #### Proceso de revisión de código
+Un `Pull Request` es mucho más que una simple solicitud para fusionar código; es el inicio de un proceso de revisión de código colaborativo y estructurado:
+
+1. `Creación del PR`: Un desarrollador crea una nueva rama, realiza sus cambios, los confirma y los sube a su repositorio (o a su fork del repositorio). Luego, abre un Pull Request **desde esa rama hacia la rama base** (comúnmente main o master) del repositorio. 
+
+- El PR incluye: un título, una descripción (explicando los cambios y su propósito) y muestra las diferencias (diff) entre la rama propuesta y la rama base.
+
+2. `Revisión por pares`: Otros miembros del equipo (revisores) examinan el código propuesto. Pueden dejar comentarios línea por línea, sugerir cambios, hacer preguntas o señalar posibles problemas (bugs, ineficiencias, violaciones de estándares de codificación)
+
+3. `Iteración`: El autor del PR responde a los comentarios, realiza las modificaciones sugeridas y sube nuevas confirmaciones a su rama. 
+- El PR **se actualiza automáticamente con estos nuevos cambios**.
+
+4. `Aprobación y fusión`: Una vez que los revisores están satisfechos con los cambios y se han resuelto todas las discusiones, el PR es aprobado. En este punto, **se puede fusionar (merge) la rama del PR en la rama base**. GitHub ofrece diferentes estrategias de fusión (merge commit, squash and merge, rebase and merge).
+
+5. `Cierre`: Una vez fusionado, **el PR se cierra automáticamente**, lo que indica que los cambios han sido integrados en la base de código principal. **La rama del PR puede eliminarse, ya que sus cambios ya forman parte del historial principal**. 
 
 <a id="ci/cd-con-pull-request"></a>
 #### Integración continua/Despliegue continuo (CI/CD) con PRs
@@ -1129,24 +1177,90 @@ El comando `git pull <nombre_remoto> <nombre_rama>` es una operación de dos pas
 
 <a id="gestion-de-proyectos"></a>
 ### Funcionalidades para la gestión de proyectos
+GitHub, como plataforma, va más allá del control de versiones y la revisión de código. Ofrece un conjunto de funcionalidades robustas diseñadas para la gestión integral de proyectos, ayudando a los equipos a organizar tareas, documentar información, colaborar en ideas y comunicarse de manera efectiva
 
 <a id="wikis"></a>
 #### Wikis
+Una Wiki en GitHub **es una sección integrada en cada repositorio** que permite a los colaboradores crear y mantener documentación directamente dentro del proyecto. Esencialmente, **es un sitio web simple y colaborativo donde se puede escribir contenido utilizando un formato de marcado ligero (como Markdown) para crear páginas, enlazarlas entre sí**.
+
+> Propósito y usos comunes
+
+1. `Documentación del proyecto`: Es un lugar ideal para almacenar información que no encaja directamente en el código o en los archivos README. Esto puede incluir:
+
+- `Guías de inicio rápido`: Cómo configurar el entorno de desarrollo, cómo correr las pruebas, cómo desplegar el proyecto.
+
+- `Arquitectura del sistema`: Diagramas, explicaciones de los componentes clave y sus interacciones.
+
+- `Glosarios`: Definiciones de términos específicos del proyecto.
+
+2. `Conocimiento compartido`: Las Wikis facilitan que los miembros del equipo compartan conocimientos y mantengan la información actualizada.
+
+![image](https://github.com/user-attachments/assets/d8b2902c-8fad-49ad-8565-b6ee4b8b167f)
 
 <a id="projects"></a>
 #### Projects
+La funcionalidad Projects (anteriormente **Project Boards**) **es una herramienta avanzada para la gestión de proyectos en GitHub**.Por una parte tenemos a los Issues, son elementos individuales de trabajo (tareas, bugs), los Projects son la herramienta para organizar y visualizar esos Issues en un flujo de trabajo. Un Issue puede existir por sí solo, pero un Project agrupa múltiples Issues (y PRs) para dar una visión macro del progreso.
+
+> Propósito y usos comunes:
+
+1.  Permiten visualizar el flujo de trabajo de un proyecto en un formato de tablero, con columnas que representan diferentes estados (por ejemplo, "To Do", "In Progress", "Done" o etapas personalizadas).
+
+2.  Permiten asignar tareas a personas, establecer prioridades y marcar tareas como completadas.
+
+3. Se pueden añadir Issues y PRs como "tarjetas" en el tablero y arrastrarlas entre columnas a medida que avanzan en el flujo de trabajo.
+
+
+> Tipos de Projects
+
+- `Tablas`: Son los tableros Kanban/Scrum clásicos, con columnas y tarjetas.
+
+- `Hojas de cálculo`: Permiten una vista de tabla más tradicional, útil para listas grandes de elementos y para filtrar y ordenar.
+
+- `Roadmaps`: Para visualizar hitos y el progreso de alto nivel.
+
+![image](https://github.com/user-attachments/assets/f95fd77c-9602-4be2-9c5e-7f1032b74e6e)
+
+
 
 <a id="discussions"></a>
 #### Discussions
+Las Discussions (Discusiones) son una funcionalidad más reciente de GitHub, diseñada para **fomentar conversaciones comunitarias que no son necesariamente sobre errores o características específicas (como en los Issues), sino más bien sobre ideas, preguntas generales, etc**.
+
+> Características clave
+
+1. `Categorías`: Las discusiones se pueden organizar en categorías predefinidas (por ejemplo, "General", "Ideas", "Q&A", "Announcements") para mantener el orden.
+
+2. `Marcado como "Answered"`: Las preguntas pueden marcarse como resueltas, ayudando a otros usuarios a encontrar respuestas rápidamente.
+
+3. `Suscripción`: Los usuarios pueden suscribirse a discusiones específicas o categorías para recibir notificaciones sobre nuevas publicaciones.
+
+4. `Integración con Issues`: Las discusiones pueden convertirse en Issues si una idea madura lo suficiente como para requerir trabajo de desarrollo.
 
 <a id="flujos-de-trabajo-colaborativo"></a>
 ### Flujos de trabajo colaborativos
 
-<a id="centralized-workflow"></a>
-#### Centralized Workflow
-
 <a id="forks"></a>
 #### Fork: Contribuir a proyectos de código abierto
+El flujo de trabajo de `Fork (bifurcación)` es el modelo predominante para la contribución a proyectos de código abierto en plataformas como GitHub. A diferencia del flujo de trabajo centralizado donde todos envían a un mismo repositorio, en el flujo de Fork, **cada colaborador trabaja en su propia copia independiente del repositorio original**.
+
+Cuando se hace un fork de un repositorio, **GitHub crea una copia de ese repositorio bajo la cuenta del usuario (o organización)**. Esta copia es completamente propia de la cuenta, y permite hacer todos los cambios que se quieran hacer en ella sin afectar el repositorio original.
+
+> Flujo de trabajo de Fork
+
+El flujo de trabajo de Fork es el estándar de oro para proyectos de código abierto y cualquier escenario donde los colaboradores no tienen acceso directo de escritura al repositorio principal, o donde se desea un proceso de revisión de código estricto antes de la integración.
 
 
+> Ventajas
 
+- Los colaboradores pueden trabajar de forma independiente sin permisos de escritura en el repositorio original. Esto es fundamental para proyectos de código abierto.
+
+- Los cambios de cada colaborador están contenidos en su propio fork hasta que son revisados y aceptados en el repositorio original.
+
+- El repositorio original está protegido, ya que solo los mantenedores tienen permisos para fusionar código.
+
+
+> Desventajas
+
+- El flujo de trabajo puede ser más complejo de entender para los principiantes
+
+- Cada fork es una copia completa, lo que puede ocupar espacio y requiere gestión
